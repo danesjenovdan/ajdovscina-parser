@@ -57,7 +57,6 @@ class DataStorage(object):
                 #self.klubovi[org['id']] = org['name']
         logging.warning(f'loaded {len(self.organizations)} organizations')
         for vote in self.parladata_api.get_votes():
-            logging.warning(vote)
             self.votes[self.get_vote_key(vote)] = vote['id']
         logging.warning(f'loaded {len(self.votes)} votes')
 
@@ -67,11 +66,11 @@ class DataStorage(object):
                 self.sessions_in_review.append(_session['id'])
         logging.warning(f'loaded {len(self.sessions)} sessions')
 
-        for session in self.sessions.values():
-            speeche_count = self.parladata_api.get_session_speech_count(session_id=session)
-            self.sessions_speech_count[session] = speeche_count
-            if speeche_count > 0:
-                self.sessions_with_speeches.append(speeche_count)
+        # for session in self.sessions.values():
+        #     speeche_count = self.parladata_api.get_session_speech_count(session_id=session)
+        #     self.sessions_speech_count[session] = speeche_count
+        #     if speeche_count > 0:
+        #         self.sessions_with_speeches.append(speeche_count)
 
         for motion in self.parladata_api.get_motions():
             self.motions[self.get_motion_key(motion)] = motion['id'] # TODO check if is key good key
@@ -81,9 +80,9 @@ class DataStorage(object):
             self.agenda_items[self.get_agenda_key(item)] = item['id']
         logging.warning(f'loaded {len(self.agenda_items)} agenda_items')
 
-        for question in self.parladata_api.get_questions():
-            self.questions[self.get_question_key(question)] = {'id': question['id'], 'answer': question['answer_timestamp']}
-        logging.warning(f'loaded {len(self.questions)} questions')
+        # for question in self.parladata_api.get_questions():
+        #     self.questions[self.get_question_key(question)] = {'id': question['id'], 'answer': question['answer_timestamp']}
+        # logging.warning(f'loaded {len(self.questions)} questions')
 
         for legislation in self.parladata_api.get_legislation():
             self.legislation[legislation['epa']] = legislation
