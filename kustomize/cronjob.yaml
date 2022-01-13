@@ -3,7 +3,7 @@ kind: CronJob
 metadata:
   name: parlameter-update-flow
 spec:
-  schedule: "0 1 * * *"
+  schedule: "0 2 * * *"
   successfulJobsHistoryLimit: 1
   failedJobsHistoryLimit: 2
   jobTemplate:
