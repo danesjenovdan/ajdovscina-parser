@@ -80,7 +80,7 @@ class Parser(object):
                                 'text': agenda_item,
                                 'session': session_id,
                                 'timestamp': start_time.isoformat(),
-                                'classification': self.storage.legislation_classification['decree'],
+                                'classification': self.storage.legislation_classifications['decree'],
                             })
                             legislation_id = legislation_obj['id']
 
