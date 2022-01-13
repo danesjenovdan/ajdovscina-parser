@@ -32,7 +32,6 @@ class Parser(object):
             parsed_data = self.parse_doc()
             session_id = None
 
-            #data = defaultdict(lambda: defaultdict(list))
             data = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
 
             # prettify data structure

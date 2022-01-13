@@ -1,4 +1,4 @@
 from parlaparser.parser import Parser
 
-perser = Parser()
+parser = Parser()
 parser.parse()
