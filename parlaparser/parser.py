@@ -129,10 +129,10 @@ class Parser(object):
 
     def load_document(self, url):
         response = requests.get(url)
-        with open(f'parlaparser/files/temp_file.xls', 'wb') as f:
+        with open(f'/tmp/temp_file.xls', 'wb') as f:
             f.write(response.content)
 
-        self.book = xlrd.open_workbook('parlaparser/files/temp_file.xls')
+        self.book = xlrd.open_workbook('/tmp/temp_file.xls')
 
     def parse_doc(self):
         sheet = self.book.sheet_by_index(0)
