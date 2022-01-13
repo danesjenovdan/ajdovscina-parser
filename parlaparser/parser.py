@@ -76,7 +76,7 @@ class Parser(object):
                             'order': agenda_order
                         })
                         if 'odlok' in agenda_item.lower():
-                            legislation_obj = self.data_storage.set_legislation({
+                            legislation_obj = self.storage.set_legislation({
                                 'text': agenda_item,
                                 'session': session_id,
                                 'timestamp': start_time.isoformat(),
