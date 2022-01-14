@@ -20,7 +20,7 @@ spec:
               - name: PARSER_MANDATE_START_DATE
                 value: '2018-12-15'
               - name: PARSER_MAIN_ORG_ID
-                value: '1'
+                value: '2'
               - name: PARSER_MANDATE_ID
                 value: '1'
             envFrom:

@@ -65,7 +65,8 @@ class Parser(object):
                         session_id, added = self.storage.add_or_get_session({
                             'name': vote_object['session_name'],
                             'organizations': [self.storage.main_org_id],
-                            'start_time': start_time.isoformat()
+                            'start_time': start_time.isoformat(),
+                            'classification': 'regular'
                         })
                         print('Adding session', vote_object['session_name'])
                     if not agenda_item_id:
