@@ -208,6 +208,9 @@ class DataStorage(object):
     def get_documents(self, tag):
         return self.parladata_api.get_documents(tag=tag)
 
+    def get_links(self, tag):
+        return self.parladata_api.get_links(tag=tag)
+
     def add_membership(self, data):
         membership = self.parladata_api.set_membership(data)
         if data['role'] == 'voter':

@@ -2,6 +2,7 @@ from parlaparser.utils.storage import DataStorage
 
 from datetime import datetime
 from collections import defaultdict
+from lxml import html
 
 import json
 import xlrd
@@ -13,13 +14,96 @@ OPTION_MAP = {
     'Za': 'for',
     'Ni glasoval/a': 'abstain'
 }
-
+BASE_URL = 'https://www.ajdovscina.si'
 class Parser(object):
     def __init__(self):
         self.storage = DataStorage()
         self.parsable_documents = self.storage.get_documents(tag='parsable')
+        self.parsable_links = self.storage.get_links(tag='parsable')
 
     def parse(self):
+        self.parse_links()
+        self.parse_documents()
+
+    def parse_links(self):
+        for link in self.parsable_links:
+            # skip parsed files
+            if 'parsed' in link['tags']:
+                print('skup link')
+                continue
+
+            parsed_data = self.parse_agenda_items_from_link(link['url'])
+            start_time = datetime.strptime(parsed_data['start_time'], '%d.%m.%Y')
+            session_id, added = self.storage.add_or_get_session({
+                'name': parsed_data['session_name'],
+                'organizations': [self.storage.main_org_id],
+                'start_time': start_time.isoformat(),
+                'classification': 'regular'
+            })
+            if added:
+                for agenda_item in parsed_data['agenda_items']:
+                    order = agenda_item['order']
+                    if order.isdigit():
+                        agenda_item_id = self.storage.get_or_add_agenda_item({
+                            'name': agenda_item['title'],
+                            'datetime': start_time.isoformat(),
+                            'session': session_id,
+                            'order': int(order)
+                        })
+                        for link in agenda_item['links']:
+                            self.storage.set_link({
+                                'url': link['url'],
+                                'name': link['title'],
+                                'agenda_item': agenda_item_id
+                            })
+
+    def parse_agenda_items_from_link(self, link):
+        agenda_items = []
+
+        print('start parsing document')
+        session_content = requests.get(url=link).content
+        htree = html.fromstring(session_content)
+
+        session_name = htree.cssselect("div#text-content-container>h1")[0].text
+        start_time = htree.cssselect("div#text-content-container>p")[0].xpath("./text()")[0].strip()
+        for element in htree.cssselect("div#text-content-container>div"):
+            element_id = element.get('id')
+            if element_id and 'content-' in element_id:
+                print("buu")
+                current_agenda_order = None
+                agenda_item = {'links': []}
+                for paragraph in element.cssselect('p')[1:]:
+                    text = paragraph.xpath("./text()")
+                    links = paragraph.cssselect("a")
+                    print(text)
+                    if text and '.' in text[0]:
+                        if 'title' in agenda_item.keys():
+                            agenda_items.append(agenda_item)
+                            agenda_item = {
+                                'links': [],
+                            }
+                        current_agenda_order = text[0].split('.')[0].strip()
+                        agenda_item['order'] = current_agenda_order
+                        agenda_item['title'] = text[0]
+                        if links:
+                            agenda_item['title'] = f'{agenda_item["title"]} {links[0].text}'
+                    for link in links:
+                        agenda_item['links'].append({
+                            'url': f'{BASE_URL}{link.get("href")}',
+                            'title': link.text,
+                        })
+                if agenda_item:
+                    agenda_items.append(agenda_item)
+        return {
+            'agenda_items': agenda_items,
+            'session_name': session_name,
+            'start_time': start_time
+        }
+
+
+
+
+    def parse_documents(self):
         for document in self.parsable_documents:
             # skip parsed files
             if 'parsed' in document['tags']:
