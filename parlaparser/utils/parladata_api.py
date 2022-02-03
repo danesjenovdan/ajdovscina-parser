@@ -103,6 +103,9 @@ class ParladataApi(object):
     def get_documents(self, tag):
         return self._get_objects(f'documents?tags__name={tag}')
 
+    def get_links(self, tag):
+        return self._get_objects(f'links?tags__name={tag}')
+
     def get_memberships(self, role=None):
         if role:
             role = f'?role=role'
