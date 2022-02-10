@@ -186,6 +186,9 @@ class ParladataApi(object):
     def patch_document(self, id, data):
         return self._patch_object(f'documents/{id}', data)
 
+    def patch_link(self, id, data):
+        return self._patch_object(f'links/{id}', data)
+
     def set_question(self, data):
         return self._set_object('questions', data).json()
 
