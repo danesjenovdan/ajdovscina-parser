@@ -50,12 +50,17 @@ class Parser(object):
                             'session': session_id,
                             'order': int(order)
                         })
-                        for link in agenda_item['links']:
+                        for docs in agenda_item['links']:
                             self.storage.set_link({
-                                'url': link['url'],
-                                'name': link['title'],
+                                'url': docs['url'],
+                                'name': docs['title'],
                                 'agenda_item': agenda_item_id
                             })
+            self.storage.patch_link(
+                link['id'], 
+            {
+                'tags': ['parsable', 'parsed']
+            })
 
     def parse_agenda_items_from_link(self, link):
         agenda_items = []
@@ -142,17 +147,34 @@ class Parser(object):
                     vote_id = None
                     ballots_for_save = []
                     start_time = vote_object['datetime']
-                    title = vote_object['title']
+                    splited_agenda = agenda_item.split(' ')
+                    agenda_item_title = agenda_item
+                    try:
+                        if splited_agenda[0][-1].strip() == '.':
+                            if splited_agenda[0][:-1].isdigit():
+                                agenda_item_title = ' '.join(splited_agenda[1:])
+                    except:
+                        pass
+                    title = f'{agenda_item_title} ({vote_object["title"]})'
                     print('Adding agenda item', agenda_item, agenda_order)
 
                     if not session_id:
+                        session_number = vote_object['session_name'].split(' ')[0]
+                        # TODO magic to set name for izredne in korespondenčne seje
+                        session_name = f'{session_number} redna seja Občinskega sveta Občine Ajdovščina'
                         session_id, added = self.storage.add_or_get_session({
-                            'name': vote_object['session_name'],
+                            'name': session_name,
                             'organizations': [self.storage.main_org_id],
                             'start_time': start_time.isoformat(),
                             'classification': 'regular'
                         })
                         print('Adding session', vote_object['session_name'])
+
+                    self.storage.patch_session(
+                        session_id,
+                        {
+                            'start_time': start_time.isoformat(),
+                        })
                     if not agenda_item_id:
                         agenda_item_id = self.storage.get_or_add_agenda_item({
                             'name': agenda_item,

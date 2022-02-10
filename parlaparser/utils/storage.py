@@ -61,7 +61,7 @@ class DataStorage(object):
         logging.warning(f'loaded {len(self.votes)} votes')
 
         for _session in self.parladata_api.get_sessions():
-            self.sessions[f'{_session["name"]}_{"_".join(list(map(str, _session["organizations"])))}'] = _session['id']
+            self.sessions[self.get_session_key(_session)] = _session['id']
             if _session['in_review']:
                 self.sessions_in_review.append(_session['id'])
         logging.warning(f'loaded {len(self.sessions)} sessions')
@@ -125,11 +125,14 @@ class DataStorage(object):
     def get_motion_key(self, motion):
         return (motion['gov_id'] if motion['gov_id'] else '').strip().lower()
 
+    def get_session_key(self, session):
+        return session['name'].strip().lower()
+
     def get_question_key(self, question):
         return (question['title'] + question['timestamp'] + question['recipient_text']).strip().lower()
 
     def get_agenda_key(self, agenda_item):
-        return (agenda_item['name'] + '_' + agenda_item['datetime']).strip().lower()
+        return f'{agenda_item["session"]} {agenda_item["order"]}'
 
     def get_legislation_consideration_key(self, legislation_consideration):
         return f'{legislation_consideration["timestamp"]}_{legislation_consideration["legislation"]}_{legislation_consideration["procedure_phase"]}'
@@ -223,7 +226,7 @@ class DataStorage(object):
         return membership
 
     def add_or_get_session(self, data):
-        key = f'{data["name"]}_{self.main_org_id}'
+        key = self.get_session_key(data)
         if key in self.sessions:
             return self.sessions[key], False
         else:
@@ -301,6 +304,9 @@ class DataStorage(object):
 
     def patch_document(self, id, data):
         self.parladata_api.patch_document(id, data)
+
+    def patch_link(self, id, data):
+        self.parladata_api.patch_link(id, data)
 
     def patch_legislation(self, id, data):
         self.parladata_api.patch_legislation(id, data)
