@@ -4,9 +4,9 @@ from datetime import datetime
 from collections import defaultdict
 from lxml import html
 
-import json
 import xlrd
 import requests
+import re
 
 OPTION_MAP = {
     'Proti': 'against',
@@ -16,6 +16,8 @@ OPTION_MAP = {
 }
 BASE_URL = 'https://www.ajdovscina.si'
 class Parser(object):
+    FIND_SESSION_NUMBER = r'\d*'
+
     def __init__(self):
         self.storage = DataStorage()
         self.parsable_documents = self.storage.get_documents(tag='parsable')
@@ -38,7 +40,7 @@ class Parser(object):
                 'name': parsed_data['session_name'],
                 'organizations': [self.storage.main_org_id],
                 'start_time': start_time.isoformat(),
-                'classification': 'regular'
+                'classification': parsed_data['session_type']
             })
             if added:
                 for agenda_item in parsed_data['agenda_items']:
@@ -69,7 +71,7 @@ class Parser(object):
         session_content = requests.get(url=link).content
         htree = html.fromstring(session_content)
 
-        session_name = htree.cssselect("div#text-content-container>h1")[0].text
+        session_name = self.normalize_session_name(htree.cssselect("div#text-content-container>h1")[0].text)
         start_time = htree.cssselect("div#text-content-container>p")[0].xpath("./text()")[0].strip()
         for element in htree.cssselect("div#text-content-container>div"):
             element_id = element.get('id')
@@ -99,14 +101,34 @@ class Parser(object):
                         })
                 if agenda_item:
                     agenda_items.append(agenda_item)
+
+        session_type = 'unknown'
+
+        if 'izredna' in session_name:
+            session_type = 'irregular'
+        elif 'korespondenčna' in session_name:
+            session_type = 'correspondent'
+        else:
+            session_type = 'regular'
+
         return {
             'agenda_items': agenda_items,
             'session_name': session_name,
-            'start_time': start_time
+            'start_time': start_time,
+            'session_type': session_type
         }
 
 
+    def normalize_session_name(self, name):
+        session_number = re.findall(self.FIND_SESSION_NUMBER, name)[0]
 
+        if 'izredna' in name:
+            session_name = f'{session_number}. izredna seja Občinskega sveta Občine Ajdovščina'
+        elif 'korespondenčna' in name:
+            session_name = f'{session_number}. korespondenčna seja Občinskega sveta Občine Ajdovščina'
+        else:
+            session_name = f'{session_number}. redna seja Občinskega sveta Občine Ajdovščina'
+        return session_name
 
     def parse_documents(self):
         for document in self.parsable_documents:
@@ -120,6 +142,15 @@ class Parser(object):
             self.load_document(document['file'])
             parsed_data = self.parse_doc()
             session_id = None
+
+            session_name = parsed_data[0]['agenda_items'][0]['votes'][0]['session_name']
+            session_name = self.normalize_session_name(session_name)
+
+            if self.storage.check_if_session_is_parsed({'name': session_name}):
+                print('continue with parsing')
+            else:
+                print('Skip this session')
+                return
 
             data = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
 
@@ -159,9 +190,6 @@ class Parser(object):
                     print('Adding agenda item', agenda_item, agenda_order)
 
                     if not session_id:
-                        session_number = vote_object['session_name'].split(' ')[0]
-                        # TODO magic to set name for izredne in korespondenčne seje
-                        session_name = f'{session_number} redna seja Občinskega sveta Občine Ajdovščina'
                         session_id, added = self.storage.add_or_get_session({
                             'name': session_name,
                             'organizations': [self.storage.main_org_id],
@@ -232,7 +260,6 @@ class Parser(object):
         except:
             out_option = None
         return out_option
-
 
     def load_document(self, url):
         response = requests.get(url)

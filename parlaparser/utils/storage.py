@@ -255,6 +255,7 @@ class DataStorage(object):
             return self.agenda_items[self.get_agenda_key(data)]
         else:
             added_agenda_item = self.parladata_api.set_agenda_item(data)
+            self.agenda_items[self.get_agenda_key(added_agenda_item)] = added_agenda_item['id']
             return added_agenda_item['id']
 
     def set_legislation_consideration(self, data):
@@ -265,6 +266,10 @@ class DataStorage(object):
     def check_if_motion_is_parsed(self, motion):
         key = self.get_motion_key(motion)
         return key in self.motions.keys()
+
+    def check_if_session_is_parsed(self, session):
+        key = self.get_session_key(session)
+        return key in self.sessions.keys()
 
     def check_if_question_is_parsed(self, question):
         key = self.get_question_key(question)
