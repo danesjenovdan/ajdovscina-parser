@@ -16,8 +16,8 @@ python manage.py set_legislation_results
 # python manage.py set_tfidf_for_sessions
 echo "run analysis for today"
 python manage.py daily_update
-echo "update legislation to solr"
-python manage.py upload_legislation_to_solr
+#echo "update legislation to solr"
+#python manage.py upload_legislation_to_solr
 # echo "update speeches to solr"
 # python manage.py upload_speeches_to_solr
 echo "update votes to solr"
