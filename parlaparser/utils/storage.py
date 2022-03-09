@@ -132,7 +132,7 @@ class DataStorage(object):
         return (question['title'] + question['timestamp'] + question['recipient_text']).strip().lower()
 
     def get_agenda_key(self, agenda_item):
-        return f'{agenda_item["session"]} {agenda_item["order"]}'
+        return f'{agenda_item["session"]}_{agenda_item["order"]}'
 
     def get_legislation_consideration_key(self, legislation_consideration):
         return f'{legislation_consideration["timestamp"]}_{legislation_consideration["legislation"]}_{legislation_consideration["procedure_phase"]}'
