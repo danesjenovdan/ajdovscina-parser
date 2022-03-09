@@ -16,7 +16,8 @@ OPTION_MAP = {
 }
 BASE_URL = 'https://www.ajdovscina.si'
 class Parser(object):
-    FIND_SESSION_NUMBER = r'\d*'
+    FIND_SESSION_NUMBER = r'\d+'
+    FIND_AGENDA_ITEM_ORDER = r'^\d+'
 
     def __init__(self):
         self.storage = DataStorage()
@@ -180,6 +181,7 @@ class Parser(object):
                     start_time = vote_object['datetime']
                     splited_agenda = agenda_item.split(' ')
                     agenda_item_title = agenda_item
+                    # remove number form start of title
                     try:
                         if splited_agenda[0][-1].strip() == '.':
                             if splited_agenda[0][:-1].isdigit():
@@ -188,6 +190,14 @@ class Parser(object):
                         pass
                     title = f'{agenda_item_title} ({vote_object["title"]})'
                     print('Adding agenda item', agenda_item, agenda_order)
+
+                    try:
+                        print(agenda_item_title)
+                        agenda_order_from_name = re.findall(self.FIND_AGENDA_ITEM_ORDER, agenda_item.strip())[0]
+                        agenda_order = int(agenda_order_from_name)
+                    except:
+                        print(f'fail parsing AI order of{agenda_item_title}')
+                        continue
 
                     if not session_id:
                         session_id, added = self.storage.add_or_get_session({
