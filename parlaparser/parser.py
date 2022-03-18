@@ -197,7 +197,10 @@ class Parser(object):
                         agenda_order = int(agenda_order_from_name)
                     except:
                         print(f'fail parsing AI order of{agenda_item_title}')
-                        continue
+                        if 'test' in agenda_item_title:
+                            continue
+                        else:
+                            agenda_order = 0
 
                     if not session_id:
                         session_id, added = self.storage.add_or_get_session({
