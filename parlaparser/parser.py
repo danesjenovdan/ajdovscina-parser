@@ -152,7 +152,7 @@ class Parser(object):
             else:
                 print('Skip this session')
                 return
-
+            start_time = datetime.min
             data = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
 
             # prettify data structure
@@ -160,6 +160,7 @@ class Parser(object):
                 person_id, added_person = self.storage.get_or_add_person(
                     person['name']
                 )
+
                 for agenda_item in person['agenda_items']:
                     for vote in agenda_item['votes']:
                         vote_with_voter = vote
@@ -169,6 +170,12 @@ class Parser(object):
                             data[agenda_item['name']][vote["name"]]['datetime'] = vote['maybe_datetime']
                             data[agenda_item['name']][vote["name"]]['session_name'] = vote['session_name']
                             data[agenda_item['name']][vote["name"]]['title'] = vote['name']
+                    # workaround if vote has not maybe_datetime than set previous date
+                    if not data[agenda_item['name']][vote["name"]]['datetime']:
+                        print('default')
+                        data[agenda_item['name']][vote["name"]]['datetime'] = start_time
+                        data[agenda_item['name']][vote["name"]]['session_name'] = vote['session_name']
+                        data[agenda_item['name']][vote["name"]]['title'] = vote['name']
 
             # save data
             for agenda_order, (agenda_item, votes) in enumerate(data.items()):
@@ -179,9 +186,6 @@ class Parser(object):
                     vote_id = None
                     ballots_for_save = []
                     start_time = vote_object['datetime']
-                    print(start_time)
-                    if isinstance(start_time, list):
-                        start_time = start_time[0]
                     splited_agenda = agenda_item.split(' ')
                     agenda_item_title = agenda_item
                     # remove number form start of title
