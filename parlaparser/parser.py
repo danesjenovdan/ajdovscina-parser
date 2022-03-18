@@ -211,11 +211,14 @@ class Parser(object):
                         })
                         print('Adding session', vote_object['session_name'])
 
-                    self.storage.patch_session(
-                        session_id,
-                        {
-                            'start_time': start_time.isoformat(),
-                        })
+                    try:
+                        self.storage.patch_session(
+                            session_id,
+                            {
+                                'start_time': start_time.isoformat(),
+                            })
+                    except:
+                        pass
                     if not agenda_item_id:
                         agenda_item_id = self.storage.get_or_add_agenda_item({
                             'name': agenda_item,
