@@ -6,4 +6,4 @@ resources:
 images:
   - name: parlaparser-ajdovscina
     newName: rg.fr-par.scw.cloud/djnd/parlaparser-ajdovscina
-    newTag: '23b3ac5a27e79f1af48da5517472927792bbd14e'
+    newTag: '64479bc1e122dd3a355ce5fb2a4f9ccc1d638a71'
