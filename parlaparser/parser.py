@@ -179,6 +179,9 @@ class Parser(object):
                     vote_id = None
                     ballots_for_save = []
                     start_time = vote_object['datetime']
+                    print(start_time)
+                    if isinstance(start_time, list):
+                        start_time = start_time[0]
                     splited_agenda = agenda_item.split(' ')
                     agenda_item_title = agenda_item
                     # remove number form start of title
