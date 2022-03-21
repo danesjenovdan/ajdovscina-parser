@@ -21,8 +21,9 @@ class Parser(object):
 
     def __init__(self):
         self.storage = DataStorage()
-        self.parsable_documents = self.storage.get_documents(tag='parsable')
+
         self.parsable_links = self.storage.get_links(tag='parsable')
+        self.parsable_documents = self.storage.get_documents(tag='parsable')
 
     def parse(self):
         self.parse_links()
@@ -160,22 +161,16 @@ class Parser(object):
                 person_id, added_person = self.storage.get_or_add_person(
                     person['name']
                 )
-
                 for agenda_item in person['agenda_items']:
                     for vote in agenda_item['votes']:
                         vote_with_voter = vote
                         vote_with_voter.update(voter=person_id)
                         data[agenda_item['name']][vote["name"]]['ballots'].append(vote_with_voter)
-                        if vote['maybe_datetime']:
-                            data[agenda_item['name']][vote["name"]]['datetime'] = vote['maybe_datetime']
-                            data[agenda_item['name']][vote["name"]]['session_name'] = vote['session_name']
-                            data[agenda_item['name']][vote["name"]]['title'] = vote['name']
-                    # workaround if vote has not maybe_datetime than set previous date
-                    if not data[agenda_item['name']][vote["name"]]['datetime']:
-                        print('default')
-                        data[agenda_item['name']][vote["name"]]['datetime'] = start_time
                         data[agenda_item['name']][vote["name"]]['session_name'] = vote['session_name']
                         data[agenda_item['name']][vote["name"]]['title'] = vote['name']
+                        if vote['maybe_datetime']:
+                            data[agenda_item['name']][vote["name"]]['datetime'] = vote['maybe_datetime']
+
 
             # save data
             for agenda_order, (agenda_item, votes) in enumerate(data.items()):
@@ -185,7 +180,9 @@ class Parser(object):
                     #print(vote_object)
                     vote_id = None
                     ballots_for_save = []
-                    start_time = vote_object['datetime']
+                    if 'datetime' in vote_object.keys():
+                        start_time = vote_object['datetime']
+
                     splited_agenda = agenda_item.split(' ')
                     agenda_item_title = agenda_item
                     # remove number form start of title
