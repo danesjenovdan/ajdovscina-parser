@@ -1,4 +1,4 @@
-FROM rg.fr-par.scw.cloud/djnd/parladata:latest
+FROM rg.fr-par.scw.cloud/djnd/parladata-ajdovscina:latest
 
 RUN apt-get update && \
     apt-get upgrade -y
