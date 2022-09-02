@@ -72,7 +72,7 @@ class Parser(object):
         agenda_items = [{
             'url': '',
             'title': 'Pred prvo točko dnevnega reda',
-            'order': 0,
+            'order': '0',
             'links': []
         }]
 
