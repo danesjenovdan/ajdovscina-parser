@@ -48,20 +48,20 @@ class Parser(object):
             if added:
                 last_saved_order = self.storage.get_last_agenda_item_order()
                 for agenda_item in parsed_data['agenda_items']:
-                    order = int(agenda_item['order']) + last_saved_order + 1
-                    #if order.isdigit():
-                    agenda_item__obj = self.storage.get_or_add_agenda_item({
-                        'name': agenda_item['title'],
-                        'datetime': start_time.isoformat(),
-                        'session': session_id,
-                        'order': int(order)
-                    })
-                    for docs in agenda_item['links']:
-                        self.storage.set_link({
-                            'url': docs['url'],
-                            'name': docs['title'],
-                            'agenda_item': agenda_item__obj['id']
+                    if agenda_item['order'].isdigit():
+                        order = int(agenda_item['order']) + last_saved_order + 1
+                        agenda_item__obj = self.storage.get_or_add_agenda_item({
+                            'name': agenda_item['title'],
+                            'datetime': start_time.isoformat(),
+                            'session': session_id,
+                            'order': int(order)
                         })
+                        for docs in agenda_item['links']:
+                            self.storage.set_link({
+                                'url': docs['url'],
+                                'name': docs['title'],
+                                'agenda_item': agenda_item__obj['id']
+                            })
             self.storage.patch_link(
                 link['id'], 
             {
