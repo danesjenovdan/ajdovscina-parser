@@ -77,7 +77,7 @@ class DataStorage(object):
         logging.warning(f'loaded {len(self.motions)} motions')
 
         for item in self.parladata_api.get_agenda_items():
-            self.agenda_items[self.get_agenda_key(item)] = item['id']
+            self.agenda_items[self.get_agenda_key(item)] = item
         logging.warning(f'loaded {len(self.agenda_items)} agenda_items')
 
         # for question in self.parladata_api.get_questions():
@@ -255,8 +255,14 @@ class DataStorage(object):
             return self.agenda_items[self.get_agenda_key(data)]
         else:
             added_agenda_item = self.parladata_api.set_agenda_item(data)
-            self.agenda_items[self.get_agenda_key(added_agenda_item)] = added_agenda_item['id']
-            return added_agenda_item['id']
+            self.agenda_items[self.get_agenda_key(added_agenda_item)] = added_agenda_item
+            return added_agenda_item
+
+    def get_last_agenda_item_order(self):
+        return max(self.agenda_items.values(), key=lambda x:x['order'])['order']
+
+    def get_session_first_agenda_item(self, session_id):
+        return min(agenda_item['order'] for agenda_item in self.agenda_items.values() if agenda_item['session'] == session_id)
 
     def set_legislation_consideration(self, data):
         legislation_consideration = self.parladata_api.set_legislation_consideration(data).json()
