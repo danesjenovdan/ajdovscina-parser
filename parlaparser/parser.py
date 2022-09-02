@@ -29,6 +29,7 @@ class Parser(object):
         self.parse_links()
         self.parse_documents()
 
+
     def parse_links(self):
         for link in self.parsable_links:
             # skip parsed files
@@ -45,21 +46,22 @@ class Parser(object):
                 'classification': parsed_data['session_type']
             })
             if added:
+                last_saved_order = self.storage.get_last_agenda_item_order()
                 for agenda_item in parsed_data['agenda_items']:
-                    order = agenda_item['order']
-                    if order.isdigit():
-                        agenda_item_id = self.storage.get_or_add_agenda_item({
-                            'name': agenda_item['title'],
-                            'datetime': start_time.isoformat(),
-                            'session': session_id,
-                            'order': int(order)
+                    order = int(agenda_item['order']) + last_saved_order + 1
+                    #if order.isdigit():
+                    agenda_item__obj = self.storage.get_or_add_agenda_item({
+                        'name': agenda_item['title'],
+                        'datetime': start_time.isoformat(),
+                        'session': session_id,
+                        'order': int(order)
+                    })
+                    for docs in agenda_item['links']:
+                        self.storage.set_link({
+                            'url': docs['url'],
+                            'name': docs['title'],
+                            'agenda_item': agenda_item__obj['id']
                         })
-                        for docs in agenda_item['links']:
-                            self.storage.set_link({
-                                'url': docs['url'],
-                                'name': docs['title'],
-                                'agenda_item': agenda_item_id
-                            })
             self.storage.patch_link(
                 link['id'], 
             {
@@ -67,7 +69,12 @@ class Parser(object):
             })
 
     def parse_agenda_items_from_link(self, link):
-        agenda_items = []
+        agenda_items = [{
+            'url': '',
+            'title': 'Pred prvo točko dnevnega reda',
+            'order': 0,
+            'links': []
+        }]
 
         print('start parsing document')
         session_content = requests.get(url=link).content
@@ -173,6 +180,7 @@ class Parser(object):
 
 
             # save data
+            min_session_agenda_order = None
             for agenda_order, (agenda_item, votes) in enumerate(data.items()):
                 agenda_item_id = None
                 legislation_id = None
@@ -214,6 +222,8 @@ class Parser(object):
                             'classification': 'regular'
                         })
                         print('Adding session', vote_object['session_name'])
+                        min_session_agenda_order = self.storage.get_session_first_agenda_item(session_id)
+                        print('TO JE MIN: ', min_session_agenda_order)
 
                     try:
                         self.storage.patch_session(
@@ -223,8 +233,11 @@ class Parser(object):
                             })
                     except:
                         pass
+
+                    # shift agenda item order for order of session's first angeda item
+                    agenda_order = agenda_order + min_session_agenda_order
                     if not agenda_item_id:
-                        agenda_item_id = self.storage.get_or_add_agenda_item({
+                        agenda_item_obj = self.storage.get_or_add_agenda_item({
                             'name': agenda_item,
                             'datetime': start_time.isoformat(),
                             'session': session_id,
@@ -245,7 +258,7 @@ class Parser(object):
                             'text': title,
                             'datetime': start_time.isoformat(),
                             'session': session_id,
-                            'agenda_items': [agenda_item_id]
+                            'agenda_items': [agenda_item_obj['id']]
                         }
                         if legislation_id:
                             motion['law'] = legislation_id
