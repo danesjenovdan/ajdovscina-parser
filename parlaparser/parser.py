@@ -249,6 +249,7 @@ class Parser(object):
                                 'session': session_id,
                                 'timestamp': start_time.isoformat(),
                                 'classification': self.storage.legislation_classifications['decree'],
+                                'mandate_id': self.storage.mandate_id
                             })
                             legislation_id = legislation_obj['id']
 
