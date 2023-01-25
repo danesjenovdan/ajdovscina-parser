@@ -156,7 +156,7 @@ class Parser(object):
             session_name = parsed_data[0]['agenda_items'][0]['votes'][0]['session_name']
             session_name = self.normalize_session_name(session_name)
 
-            if self.storage.check_if_session_is_parsed({'name': session_name}):
+            if self.storage.check_if_session_is_parsed({'name': session_name, 'mandate': self.storage.mandate_id}):
                 print('continue with parsing')
             else:
                 print('Skip this session')
