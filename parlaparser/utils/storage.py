@@ -126,7 +126,7 @@ class DataStorage(object):
         return (motion['gov_id'] if motion['gov_id'] else '').strip().lower()
 
     def get_session_key(self, session):
-        return session['name'].strip().lower()
+        return f"{session['mandate']}_{session['name']}".strip().lower()
 
     def get_question_key(self, question):
         return (question['title'] + question['timestamp'] + question['recipient_text']).strip().lower()
@@ -230,7 +230,6 @@ class DataStorage(object):
         if key in self.sessions:
             return self.sessions[key], False
         else:
-            data.update(mandate=self.mandate_id)
             session_data = self.parladata_api.set_session(data)
             self.sessions[key] = session_data['id']
             return session_data['id'], True

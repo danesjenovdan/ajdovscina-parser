@@ -43,7 +43,8 @@ class Parser(object):
                 'name': parsed_data['session_name'],
                 'organizations': [self.storage.main_org_id],
                 'start_time': start_time.isoformat(),
-                'classification': parsed_data['session_type']
+                'classification': parsed_data['session_type'],
+                'mandate': self.storage.mandate_id
             })
             if added:
                 last_saved_order = self.storage.get_last_agenda_item_order()
@@ -219,7 +220,8 @@ class Parser(object):
                             'name': session_name,
                             'organizations': [self.storage.main_org_id],
                             'start_time': start_time.isoformat(),
-                            'classification': 'regular'
+                            'classification': 'regular',
+                            'mandate': self.storage.mandate_id
                         })
                         print('Adding session', vote_object['session_name'])
                         min_session_agenda_order = self.storage.get_session_first_agenda_item(session_id)
