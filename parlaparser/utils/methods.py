@@ -1,4 +1,4 @@
-def get_values(data, key='UNID'):
+def get_values(data, key="UNID"):
     if isinstance(data, dict):
         children = data.get(key)
         return get_values(children, key)
